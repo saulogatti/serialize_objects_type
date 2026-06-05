@@ -1,0 +1,5 @@
+analyzer:
+  errors:
+    type_literal_in_constant_pattern: ignore
+    invalid_override_of_non_virtual_member: error
+include: package:lints/recommended.yaml
