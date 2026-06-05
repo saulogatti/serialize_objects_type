@@ -66,18 +66,30 @@ class SerializeService {
   /// Throws [UnknownTypeException] if [typeId] has no registered deserializer,
   /// [CorruptedDataException] if a stored payload cannot be decoded, and
   /// [StorageException] if reading fails.
-  Future<List<Serializable>> loadAll(String typeId) async {
+  Future<List<Serializable>> loadAll(String typeId) =>
+      streamAll(typeId).toList();
+
+  /// Lazily reconstructs every object stored under [typeId], emitting them one
+  /// at a time.
+  ///
+  /// Unlike [loadAll], this keeps at most a single payload in memory at once,
+  /// which is preferable when a type holds a large number of stored instances.
+  /// The order of the emitted objects is not guaranteed.
+  ///
+  /// Throws [UnknownTypeException] if [typeId] has no registered deserializer.
+  /// While the stream is consumed, [CorruptedDataException] (an undecodable
+  /// payload) and [StorageException] (a read failure) are emitted as stream
+  /// errors.
+  Stream<Serializable> streamAll(String typeId) async* {
     final deserializer = _registry.resolve(typeId);
     final ids = await _storage.listIds(typeId, _codec.fileExtension);
-    final objects = <Serializable>[];
     for (final id in ids) {
       final contents = await _storage.read(_keyFor(typeId, id));
       if (contents == null) {
         continue;
       }
-      objects.add(deserializer(_codec.decode(contents)));
+      yield deserializer(_codec.decode(contents));
     }
-    return objects;
   }
 
   /// Registers [deserializer] for [typeId] so objects of that type can be

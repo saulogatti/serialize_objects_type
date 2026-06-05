@@ -45,7 +45,9 @@ The package is organized into four cooperating layers:
   `SerializeService({ required Storage storage, DataCodec? codec, SerializerRegistry? registry })`.
   It exposes `register(typeId, deserializer)`, `save(String id, Serializable)`,
   `load(String typeId, String id)`, `loadAll(String typeId)` (reconstructs every
-  stored instance of a type), and `delete(String typeId, String id)`.
+  stored instance of a type), `streamAll(String typeId)` (the lazy, memory-
+  friendly variant that emits instances one at a time), and
+  `delete(String typeId, String id)`.
   Failures are reported as typed subclasses of `SerializeException`.
 
 ## Quick Start
