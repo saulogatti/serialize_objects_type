@@ -69,6 +69,33 @@ class FileStorage implements Storage {
   }
 
   @override
+  Future<List<String>> listIds(String typeId, String extension) async {
+    try {
+      final directory = Directory('$basePath/$typeId');
+      if (!await directory.exists()) {
+        return <String>[];
+      }
+      final suffix = '.$extension';
+      final ids = <String>[];
+      await for (final entity in directory.list()) {
+        if (entity is! File) {
+          continue;
+        }
+        final name = entity.uri.pathSegments.last;
+        if (name.endsWith(suffix)) {
+          ids.add(name.substring(0, name.length - suffix.length));
+        }
+      }
+      return ids;
+    } on Object catch (error) {
+      throw StorageException(
+        'Failed to list storage entries for type $typeId',
+        cause: error,
+      );
+    }
+  }
+
+  @override
   Future<bool> delete(StorageKey key) async {
     try {
       final file = File(_filePathFor(key));

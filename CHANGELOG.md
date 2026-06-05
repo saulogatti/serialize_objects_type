@@ -1,3 +1,9 @@
+## Unreleased
+
+- `SerializeService.loadAll(typeId)` reconstructs every stored instance of a
+  type, backed by a new `Storage.listIds(typeId, extension)` operation
+  (implemented by `FileStorage` and `InMemoryStorage`).
+
 ## 0.1.0 - 2026-06-05
 
 - New layered architecture for type-aware object serialization:

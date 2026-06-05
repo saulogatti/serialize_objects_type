@@ -28,6 +28,16 @@ class InMemoryStorage implements Storage {
       _entries.containsKey(_keyOf(key));
 
   @override
+  Future<List<String>> listIds(String typeId, String extension) async {
+    final prefix = '$typeId/';
+    final suffix = '.$extension';
+    return _entries.keys
+        .where((k) => k.startsWith(prefix) && k.endsWith(suffix))
+        .map((k) => k.substring(prefix.length, k.length - suffix.length))
+        .toList();
+  }
+
+  @override
   Future<bool> delete(StorageKey key) async =>
       _entries.remove(_keyOf(key)) != null;
 }

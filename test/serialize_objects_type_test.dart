@@ -135,6 +135,25 @@ void main() {
       expect(await storage.delete(key), isTrue);
       expect(await storage.exists(key), isFalse);
     });
+
+    test('listIds returns every id stored under a type', () async {
+      expect(await storage.listIds('Sample', 'json'), isEmpty);
+
+      await storage.write(key, 'a');
+      await storage.write(
+        const StorageKey(typeId: 'Sample', id: 'b', extension: 'json'),
+        'b',
+      );
+      await storage.write(
+        const StorageKey(typeId: 'Other', id: 'c', extension: 'json'),
+        'c',
+      );
+
+      expect(
+        await storage.listIds('Sample', 'json'),
+        unorderedEquals(<String>['a', 'b']),
+      );
+    });
   });
 
   group('SerializeService end-to-end', () {
@@ -177,6 +196,32 @@ void main() {
       expect(
         await service.load('Sample', 'id-2'),
         equals(const Sample('second')),
+      );
+    });
+
+    test('loadAll returns every stored object of a type', () async {
+      await service.save('id-1', const Sample('first'));
+      await service.save('id-2', const Sample('second'));
+
+      final all = await service.loadAll('Sample');
+
+      expect(
+        all,
+        unorderedEquals(<Sample>[
+          const Sample('first'),
+          const Sample('second'),
+        ]),
+      );
+    });
+
+    test('loadAll returns an empty list when nothing is stored', () async {
+      expect(await service.loadAll('Sample'), isEmpty);
+    });
+
+    test('loadAll of an unregistered type throws UnknownTypeException', () {
+      expect(
+        () => service.loadAll('Unregistered'),
+        throwsA(isA<UnknownTypeException>()),
       );
     });
 

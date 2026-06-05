@@ -58,6 +58,28 @@ class SerializeService {
     return deserializer(json);
   }
 
+  /// Loads and reconstructs every object stored under [typeId].
+  ///
+  /// Returns an empty list when nothing is stored for that type. The order of
+  /// the returned objects is not guaranteed.
+  ///
+  /// Throws [UnknownTypeException] if [typeId] has no registered deserializer,
+  /// [CorruptedDataException] if a stored payload cannot be decoded, and
+  /// [StorageException] if reading fails.
+  Future<List<Serializable>> loadAll(String typeId) async {
+    final deserializer = _registry.resolve(typeId);
+    final ids = await _storage.listIds(typeId, _codec.fileExtension);
+    final objects = <Serializable>[];
+    for (final id in ids) {
+      final contents = await _storage.read(_keyFor(typeId, id));
+      if (contents == null) {
+        continue;
+      }
+      objects.add(deserializer(_codec.decode(contents)));
+    }
+    return objects;
+  }
+
   /// Registers [deserializer] for [typeId] so objects of that type can be
   /// loaded back later.
   ///

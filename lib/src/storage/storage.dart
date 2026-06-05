@@ -54,6 +54,12 @@ abstract interface class Storage {
   /// Returns whether a payload is currently stored for [key].
   Future<bool> exists(StorageKey key);
 
+  /// Lists the ids of every object stored under [typeId] using [extension].
+  ///
+  /// Returns an empty list when nothing is stored for that type. The order of
+  /// the returned ids is not guaranteed.
+  Future<List<String>> listIds(String typeId, String extension);
+
   /// Deletes the payload stored for [key].
   ///
   /// Returns `true` when an existing payload was removed, or `false` when
