@@ -218,6 +218,32 @@ void main() {
       expect(await service.loadAll('Sample'), isEmpty);
     });
 
+    test('streamAll emits every stored object of a type', () async {
+      await service.save('id-1', const Sample('first'));
+      await service.save('id-2', const Sample('second'));
+
+      final emitted = await service.streamAll('Sample').toList();
+
+      expect(
+        emitted,
+        unorderedEquals(<Sample>[
+          const Sample('first'),
+          const Sample('second'),
+        ]),
+      );
+    });
+
+    test('streamAll is empty when nothing is stored', () async {
+      expect(await service.streamAll('Sample').isEmpty, isTrue);
+    });
+
+    test('streamAll of an unregistered type throws UnknownTypeException', () {
+      expect(
+        () => service.streamAll('Unregistered').toList(),
+        throwsA(isA<UnknownTypeException>()),
+      );
+    });
+
     test('loadAll of an unregistered type throws UnknownTypeException', () {
       expect(
         () => service.loadAll('Unregistered'),
